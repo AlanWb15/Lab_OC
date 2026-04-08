@@ -35,6 +35,18 @@ section	.text
         mov al, [nlin]
         call putchar
 
+        mov edx, cad   
+        call minusculas
+
+        mov al, [nlin]
+        call putchar
+
+        mov edx, cad
+        call puts
+
+        mov al, [nlin]
+        call putchar
+
         
         mov eax, 1
         int 0x80
@@ -95,7 +107,7 @@ mayusculas:
                 cmp al, 0 
                 je .salir
 
-                ˙
+        
 
                 cmp al, 'a'
                 jb .sig
@@ -119,7 +131,44 @@ mayusculas:
                 pop edx
                 pop cx
                 ret 
+
+minusculas:
+                push cx
+                push edx
+                push ebx 
+                mov cx, bx
+                dec cx
+                mov ebx, 0
+                
+        .cicloB:
+                mov al, [edx]
+                cmp al, 0 
+                je .salirB
+
         
+
+                cmp al, 'A'
+                jb .sigB
+        
+                cmp al, 'Z'
+                ja .sigB
+
+                add al, 32
+                mov [edx], al
+
+                inc edx
+                loop .cicloB
+
+        .sigB:
+                
+                inc edx
+                loop .cicloB
+        .salirB:
+                mov byte [edx + ebx], 0
+                pop ebx
+                pop edx
+                pop cx
+                ret 
                 
 
 
