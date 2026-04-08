@@ -23,6 +23,19 @@ section	.text
         mov al, [nlin]
         call putchar
 
+        mov edx, cad   
+        call mayusculas
+
+        mov al, [nlin]
+        call putchar
+
+        mov edx, cad
+        call puts
+
+        mov al, [nlin]
+        call putchar
+
+        
         mov eax, 1
         int 0x80
 
@@ -38,6 +51,7 @@ capturar:
             call getch 
             cmp al, 0xa
             je .salir
+            cmp bx, 0
             cmp al, 0x7f
             jne .guardar
             call borrar
@@ -67,6 +81,48 @@ borrar:
         call putchar 
         pop ax
         ret
+
+mayusculas:
+                push cx
+                push edx
+                push ebx 
+                mov cx, bx
+                dec cx
+                mov ebx, 0
+                
+        .ciclo:
+                mov al, [edx]
+                cmp al, 0 
+                je .salir
+
+                ˙
+
+                cmp al, 'a'
+                jb .sig
+        
+                cmp al, 'z'
+                ja .sig
+
+                sub al, 32
+                mov [edx], al
+
+                inc edx
+                loop .ciclo
+
+        .sig:
+                
+                inc edx
+                loop .ciclo
+        .salir:
+                mov byte [edx + ebx], 0
+                pop ebx
+                pop edx
+                pop cx
+                ret 
+        
+                
+
+
     
 
 section	.data
