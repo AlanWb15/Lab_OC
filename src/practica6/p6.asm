@@ -66,6 +66,8 @@ capturar:
             cmp bx, 0
             cmp al, 0x7f
             jne .guardar
+            cmp bx, 0
+            je .ciclo
             call borrar
             dec bx
             loop .ciclo
