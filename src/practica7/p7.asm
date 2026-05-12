@@ -1,31 +1,20 @@
-%include "../../lib/pc_io.inc"  	; incluir declaraciones de procedimiento externos
-								; que se encuentran en la biblioteca libpc_io.a
-
+%include "../../lib/pc_io.inc"
 section	.text
-	global _start       ;referencia para inicio de programa
+	global _start
 	
-_start:     
-
+_start:                     ;espero nunca usar ASM en mi vida 
     mov edx,cadCon
     mov bl,byte[lencad]
     call atoi
-    mov eax, dword[numero]
-    call puts
-
-	mov	eax, 1	    	; seleccionar llamada al sistema para fin de programa
 
     mov al,10
     call putchar
     
-    mov eax,24  
+    mov eax,40
     mov edx,cad
     mov bl,byte[lencad]
     call itoa
     call puts
-
-	mov	eax, 1	    	; seleccionar llamada al sistema para fin de programa
-	int	0x80        	; llamada al sistema - fin de programa
-
     mov edx,ncad
     call puts
     mov eax,arr
@@ -35,10 +24,8 @@ _start:
     mov al,10
     call putchar
     
-
-	mov	eax, 1	    	; seleccionar llamada al sistema para fin de programa
-	int	0x80        	; llamada al sistema - fin de programa
-
+	mov	eax, 1
+	int	0x80                ;bye 
 
     impArreglo:
         push ecx
@@ -49,71 +36,83 @@ _start:
        .cicloImpArr:
         push eax
         push edx
-        ;PARAMETRO DE ITOA
         mov edx,eax
         mov eax,dword[edx+esi*4]    
         mov edx,cad
         mov bl,byte[lencad]
         call itoa
-
         mov edx,cad
         call puts
         mov al,' '
         call putchar
-
         inc esi
         pop edx
         pop eax
         loop .cicloImpArr
-
         pop esi
         pop ecx
         ret 
     
-
     atoi:
-        ;eax NUMERO ENTERO
-        ;edx CADENA
-        ;bl Longitud de la cadena        
-
         push esi
         push eax
         push edx
         push ebx
         mov esi,-1
+        mov dword[numero],0
+        mov dword[multi],1
+
+        .espacios:                         
+        movzx eax, byte[edx + esi]
+        cmp eax,' '
+        je .saltaEspacio
+        cmp eax,0x09        ;TAB
+        je .saltaEspacio
+        jmp .ciclo
+
+        .saltaEspacio:
+        inc esi
+        jmp .espacios 
 
         .ciclo:
+        movzx eax, byte[edx + esi]
+        cmp eax,0
+        je .finCadena
         inc esi
-        mov eax, dword[edx + esi*4]
-        cmp eax, 0
-        jne .ciclo
+        jmp .ciclo
+
+       
+
+        .finCadena:      
         dec esi
 
         .convertir:
-        mov eax, dword[edx + esi*4]
-        add eax, '0'
+        movzx eax, byte[edx + esi]
+        cmp eax,'0'
+        jl .exit
+        cmp eax,'9'
+        jg .exit
+        sub eax,'0'
+        push edx           
         mul dword[multi]
-        mov dword[numero], eax
-        mov eax, dword[multi]
+        add dword[numero],eax
+        mov eax,dword[multi]
         mul dword[base]
-        mov dword[multi], eax
+        mov dword[multi],eax
+        pop edx           
         dec esi
-        cmp esi, 0
+        cmp esi,0
         je .exit
-        cmp esi, 1
+        cmp esi,1
         je .signo
         jmp .convertir
 
         .signo:
-        mov bl,'-'
-        cmp bl, byte[edx+esi*4]
+        cmp byte[edx+esi],'-'
         jne .convertir
-        mov eax, dword[numero]
-        mov ebx, eax
-        add eax, eax
-        sub ebx, eax
-        mov eax, ebx
-        mov dword[numero], eax
+        mov eax,dword[numero]
+        neg eax
+        mov dword[numero],eax
 
         .exit:
         pop ebx
@@ -123,12 +122,8 @@ _start:
         ret
 
     itoa:
-        ;eax NUMERO ENTERO
-        ;edx CADENA
-        ;bl Longitud de la cadena        
         push dword[divBase]
         pop dword[divi]
-
         push esi
         mov esi,0
         mov dword[cociente],0
@@ -138,10 +133,12 @@ _start:
         jge .while 
         mov byte[edx+esi],'-'
         inc esi
+        neg eax
+        mov dword[numero],eax
        
         .while:
-        push eax
         push edx
+        mov eax,dword[numero]
         mov edx,0
         idiv dword[divi]
         cmp eax,0
@@ -151,13 +148,10 @@ _start:
         idiv dword[base]
         mov dword[divi],eax                
         pop edx
-        pop eax
         jmp .while
         
         .salir:
         pop edx
-        pop eax
-
         .do:
         push edx
         mov edx,0
@@ -166,7 +160,6 @@ _start:
         mov dword[cociente],eax
         mov dword[residuo],edx
         pop edx
-
         add dword[cociente],'0'
         push ebx
         mov bl,byte[cociente]
@@ -184,19 +177,17 @@ _start:
         cmp dword[numero],0
         jg .do        
         mov byte[edx+esi],0
-
         pop esi
         ret
 
 section	.data
     ncad db 0xa,'Arreglo: ',0
-    cadCon db 0xa,'-23.9',0
+    cadCon db 0xa,'-88',0
     nlin db 0xa
     lencad db 64
     cad	times 64 db 0
     len db 5
-    arr	dd 24,4,3,2,52
-
+    arr	dd 32,3,67,4,22
     
     numero dd 0
     cociente dd 0
@@ -205,5 +196,3 @@ section	.data
     multi dd 1
     divBase dd 1000000000
     divi dd 0
-    
-    
