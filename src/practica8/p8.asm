@@ -3,7 +3,6 @@ section	.text
 	global _start
 	
 _start:                     ;espero nunca usar ASM en mi vida 
-   _start:
 
     mov esi, 0
 
